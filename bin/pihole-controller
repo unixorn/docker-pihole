@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+#
+# Pihole controller
+#
+# Copyright 2020, Joe Block <jpb@unixorn.net>
+
+import argparse
+import logging
+import os
+import pprint
+import sys
+
+import pihole as ph
+import yaml
+
+
+def parseCLI():
+  '''
+  Parse the command line options
+  '''
+  parser = argparse.ArgumentParser()
+  parser.add_argument('-c', '--configuration-file',
+                      type=str,
+                      help='Path to configuration yaml file')
+  parser.add_argument('--debug',
+                      help='Debug setting',
+                      action='store_true')
+  parser.add_argument('-l', '--log-level',
+                      type=str.upper,
+                      help='set log level',
+                      choices=['DEBUG','INFO','ERROR','WARNING','CRITICAL'],
+                      default='INFO')
+  parser.add_argument('-p', '--password',
+                      type=str,
+                      help='pihole server password')
+  parser.add_argument('--seconds',
+                      help='Time to disable adblock in seconds',
+                      type=int,
+                      default=300)
+  parser.add_argument('--server',
+                      help='server address')
+
+  cliArgs = parser.parse_args()
+  loglevel = getattr(logging, cliArgs.log_level.upper(), None)
+  if not isinstance(loglevel, int):
+    raise ValueError('Invalid log level: %s', cliArgs.log_level)
+  logFormat = "[%(levelname)8s][%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s"
+  logging.basicConfig(level=loglevel, format=logFormat)
+  logging.info('Set log level to %s', cliArgs.log_level.upper())
+
+  logging.debug('Command line arguments: %s', cliArgs)
+  if not cliArgs.server and not cliArgs.configuration_file:
+    logging.critical('You must specify a configuration file if you do not specify --server')
+    sys.exit(13)
+  return cliArgs
+
+
+def loadYamlFile(path):
+  '''Return the data structure contained in a yaml file'''
+  with open(path) as yaml_file:
+    data = yaml.load(yaml_file, Loader=yaml.FullLoader)
+    logging.debug('yaml data: %s', data)
+    return(data)
+
+
+def disablePihole(server, password, seconds=300):
+  '''Disable a pihole server'''
+  pihole = ph.PiHole(server)
+  auth = pihole.authenticate(password)
+  logging.debug('pihole version for %s = %s', server, pihole.getVersion())
+  result = pihole.disable(seconds)
+
+
+def main():
+  '''
+  Main program driver
+  '''
+  args = parseCLI()
+
+  if args.password:
+    password = args.password
+  elif args.configuration_file:
+    password = loadYamlFile(path=args.configuration_file)['password']
+
+  if args.server:
+    server = args.server
+  elif args.configuration_file:
+    server = loadYamlFile(path=args.configuration_file)['server']
+
+  disablePihole(server=server,
+                password=password,
+                seconds=args.seconds)
+
+
+if __name__ == '__main__':
+  main()
