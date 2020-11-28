@@ -1,4 +1,4 @@
-# docker-pihole
+# docker-pihole-controller
 
 Command line controller for [pi-hole](https://pi-hole.net/).
 
