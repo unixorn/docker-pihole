@@ -36,7 +36,9 @@ def parseCLI():
                       type=int,
                       default=300)
   parser.add_argument('--server',
-                      help='server address')
+                      type=str,
+                      action='append',
+                      help='server address. Can be used multiple times if you have several pi holes with the same admin password')
 
   cliArgs = parser.parse_args()
   loglevel = getattr(logging, cliArgs.log_level.upper(), None)
@@ -90,11 +92,17 @@ def main():
     password = args.password
   elif args.configuration_file:
     password = loadYamlFile(path=args.configuration_file)['password']
+  else:
+    logging.error('You must specify a password either on the command line or in the configuration file')
+    sys.exit(7)
 
   if args.server:
     servers = args.server
   elif args.configuration_file:
     servers = loadYamlFile(path=args.configuration_file)['servers']
+  else:
+    logging.error('You must either specify servers on the command line or in the configuration file')
+    sys.exit(7)
 
   disablePihole(servers=servers,
                 password=password,

@@ -10,7 +10,7 @@ Basically, I wanted a quick way to temporarily disable my pi holes from the comm
 
 `pihole-controller --server servername --password PASSWORD --seconds SECONDS_TO_DISABLE_PIHOLE`
 
-The default number of seconds is 300.
+The default number of seconds is 300. You may specify multiple `--server` arguments.
 
 You can also specify a settings file with` --configuration-file=/path/to/yaml/file`.
 
