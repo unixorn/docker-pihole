@@ -6,8 +6,6 @@
 
 import argparse
 import logging
-import os
-import pprint
 import sys
 
 import pihole as ph
@@ -57,10 +55,10 @@ def parseCLI():
 
 def loadYamlFile(path):
   '''Return the data structure contained in a yaml file'''
-  with open(path) as yaml_file:
-    data = yaml.load(yaml_file, Loader=yaml.FullLoader)
+  with open(path) as yamlFile:
+    data = yaml.load(yamlFile, Loader=yaml.FullLoader)
     logging.debug('yaml data: %s', data)
-    return(data)
+    return data
 
 
 def disablePihole(servers, password, seconds=300):
@@ -76,10 +74,10 @@ def disablePihole(servers, password, seconds=300):
     logging.info('Connecting to %s', server)
     pihole = ph.PiHole(server)
     logging.debug('Authenticating to %s', server)
-    auth = pihole.authenticate(password)
+    pihole.authenticate(password)
     logging.debug('pihole version for %s = %s', server, pihole.getVersion())
     logging.debug('Disabling pihole for %s seconds', seconds)
-    result = pihole.disable(seconds)
+    pihole.disable(seconds)
 
 
 def main():
