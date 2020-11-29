@@ -1,6 +1,7 @@
 task :default => [:usage]
 task :help => [:usage]
 task :build => [:multiarch_build]
+task :buildx => [:multiarch_build]
 task :b => [:multiarch_build]
 
 CONTAINER_NAME = 'unixorn/pihole-controller'
@@ -32,7 +33,7 @@ end
 desc 'Use buildx to make a test container'
 task :testbuild do
   puts "Building #{CONTAINER_NAME}"
-  sh %{ docker buildx build --platform linux/amd64 --push -t #{CONTAINER_NAME}:testing .}
+  sh %{ docker buildx build --platform linux/amd64,linux/arm/v7,linux/arm64 --push -t #{CONTAINER_NAME}:testing .}
   sh %{ docker pull #{CONTAINER_NAME}:testing }
 end
 
