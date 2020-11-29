@@ -63,12 +63,23 @@ def loadYamlFile(path):
     return(data)
 
 
-def disablePihole(server, password, seconds=300):
+def disablePihole(servers, password, seconds=300):
   '''Disable a pihole server'''
-  pihole = ph.PiHole(server)
-  auth = pihole.authenticate(password)
-  logging.debug('pihole version for %s = %s', server, pihole.getVersion())
-  result = pihole.disable(seconds)
+  if isinstance(servers, str):
+    servers = [servers]
+  elif not isinstance(servers, list):
+    logging.error('servers must be a list or string')
+    sys.exit(13)
+  logging.debug('Using servers %s', servers)
+
+  for server in servers:
+    logging.info('Connecting to %s', server)
+    pihole = ph.PiHole(server)
+    logging.debug('Authenticating to %s', server)
+    auth = pihole.authenticate(password)
+    logging.debug('pihole version for %s = %s', server, pihole.getVersion())
+    logging.debug('Disabling pihole for %s seconds', seconds)
+    result = pihole.disable(seconds)
 
 
 def main():
@@ -83,11 +94,11 @@ def main():
     password = loadYamlFile(path=args.configuration_file)['password']
 
   if args.server:
-    server = args.server
+    servers = args.server
   elif args.configuration_file:
-    server = loadYamlFile(path=args.configuration_file)['server']
+    servers = loadYamlFile(path=args.configuration_file)['servers']
 
-  disablePihole(server=server,
+  disablePihole(servers=servers,
                 password=password,
                 seconds=args.seconds)
 
